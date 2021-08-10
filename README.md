@@ -1,11 +1,10 @@
 # YouTube Command Line Utility
 
-The `yt` utility is a bash script that uses `curl` to do provide
-commands for the most common tasks involving [YouTube API] relates to
-video management and live streaming such as retrieving or setting video
-title, description, and uploads information. If nothing more, this
-script provides a good starting point for understanding how the YouTube
-API works.
+The `yt` utility is a bash script that uses `curl` to do the most common
+tasks involving [YouTube API] related to video management and live
+streaming. This includes retrieving or setting video title, description,
+and upload information. If you are just starting out with the YouTube API and bash scripting, this script provides a good starting point for
+understanding how the YouTube API works.
 
 [YouTube API]: <https://developers.google.com/youtube/v3/getting-started>
 
@@ -34,7 +33,7 @@ Please mention https://youtube.com/rwxrob
 
 ## Commands
 
-### The `yt description` Command
+### The `description` Command
 
 ```
 yt description (last|live|<id>|<url>) [<string>]
@@ -60,35 +59,36 @@ to `$PAGER` (default: more).
 
 Also see `readme` and `usage` commands.
 
-### The `yt last` Command
+### The `last` Command
 
 ```
 yt last [id|url]
 ```
 
-The `last` command simply outputs the most recently added file to the
-YouTube internal `uploads` playlist (see `yt uploads` as well). If `id`
-is added will only output the ID portion. Otherwise, `url` is the
-default.
+Outputs the most recently added file to the YouTube internal `uploads`
+playlist (see `yt uploads` as well). If `id` is added will only output
+the ID portion. Otherwise, `url` is the default.
 
-### The `yt live` Command
+### The `live` Command
 
 ```
 yt live [(id|url|title)]
 ```
 
-The `live` command focuses on the current live stream video.  By default, returns the YouTube URL. To get only the YouTube identifier add `id`. To get the title add `title`. To set the title provide it after `title`.
+Outputs the current live stream video.  By default, returns a YouTube
+URL. To get only the YouTube identifier add `id`. To get the title add
+`title`. To set the title provide it after `title`.
 
-### The `yt open` Command
+### The `open` Command
 
 ```
 yt open [last|live|<id>|<url>]
 ```
 
-The `open` command will detect an external `open` command, function, or
-alias and call it passing in the full YouTube URL to the specific video.
-Outputs `<open command not found>` if cannot find. If no video is
-passed, opens up the youtube.com web page.
+Detects an external `open` command, function, or alias and calls it
+passing in the YouTube URL to the specific video.  Outputs `<open
+command not found>` if cannot find. If no video is passed, opens up the
+youtube.com web page.
 
 ### Generate `README.md` File
 
@@ -100,25 +100,25 @@ The `readme` command will output the embedded help documentation in raw
 GitHub Flavored Markdown suitable for use as a `README.md` file on
 GitHub or similar hosting service.
 
-### The `yt title` Command
+### The `title` Command
 
 ```
 yt title (last|live|<id>|<url>) [<string>]
 ```
 
-The `title` command outputs the title for the specified video or sets it to a new one passed as `<string>`.
+Outputs title for the specified video or sets it to a new one passed as
+`<string>`.
 
-### The `yt uploads` Command
+### The `uploads` Command
 
 ```
 yt uploads [<count>]
 ```
 
-The `uploads` command lists the most recently uploaded videos (from the
-contentDetails.related.Playlists.uploads playlist) by YouTube identifier
-and current title. By default, will only display enough lines to exactly
-fill the current terminal screen (tput lines - 2). (Keep in mind, this
-only works if title length has been kept to 74 or fewer columns.) Provide
+Lists the most recently uploaded videos (from the uploads playlist) by
+YouTube identifier and current title. By default, only displays enough
+lines to fill the current terminal screen. (Keep in mind, this only
+works if title length has been kept to 74 or fewer columns.) Provide
 a `<count>` argument with the total number if more lines are are wanted.
 
 Note that a live stream video is always included in the `uploads` YouTube playlist and therefore will need to be explicitely excluded.
@@ -127,7 +127,7 @@ Note that a live stream video is always included in the `uploads` YouTube playli
 
 Displays a summary of usage.
 
-### The `yt video` Command
+### The `video` Command
 
 ```
 yt video (last|live|<id>|<url>) | jq ...
@@ -135,9 +135,8 @@ file=$(yt video last | jq .fileDetails.fileName)
 likes=$(yt video last | jq .statistics.likeCount)
 ```
 
-The `video` command returns the raw JSON returned for the given video
-(by ID or URL) suitable for passing to `jq` for further isolation. This
-includes *all* the possible data for this video:
+Outputs the JSON returned for the given video (by ID or URL) suitable
+for passing to `jq` for further isolation. This includes the following:
 
 * `.id`
 * `.fileDetails`
@@ -152,7 +151,9 @@ includes *all* the possible data for this video:
 * `.topicDetails`
 * `.localizations`
 
+If and when queries are needed that span multiple videos and do not need all of this consider adding a new command specifically for those cases since this specific command is so heavy.
+
 ----
 
-*Autogenerated Tue Aug 10 07:17:05 PM EDT 2021*
+*Autogenerated Tue Aug 10 07:41:38 PM EDT 2021*
 
