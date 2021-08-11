@@ -276,6 +276,41 @@ command__set_title() {
   --data-raw '{"id": "'"$id"'", "snippet": {"title": "'"$*"'", "categoryId":"28"} }' | jq -r '.snippet.title'
 }
 
+help[publish]='
+```
+yt publish (last|live|<id>|<url>) <title> <description> [<category>]
+```
+
+Publishes an uploaded video that has not yet been published using the
+least amount of YouTube API quote points possible. Updates if already
+published. The `<title>` and `<description>` are required. If
+`<category>` is omitted the value 28 (Science and Technology) will be
+used as the default.
+
+Note about monetization: Unfortunately, monetization through the API
+requires special privileges. Monetization can be activated in bulk by
+selecting multiple videos from the YouTube studio web page.'
+
+command_publish() {
+  local id="$1" title="$2" desc="$3" categ="${4:-28}"
+  [[ $id == last ]] && id=$(command_last)
+  [[ $id == live ]] && id=$(command__live_id)
+  id="${id##*/}"
+  [[ ! -n "$title" ]] && echo '<publish requires title>' && return 1
+  [[ ! -n "$desc" ]] && echo '<publish requires description>' && return 1
+  [[ ! -n "$categ" ]] && echo '<publish requires category>' && return 1
+  title=$(_jsonstr "$title")
+  desc=$(_jsonstr "$desc")
+  local resp=$(curl -s --compressed -X PUT \
+   "https://www.googleapis.com/youtube/v3/videos?part=snippet,status&key=${APIKEY}" \
+  -H "Authorization: Bearer ${TOKEN}" \
+  -H "Accept: application/json" \
+  -H "Content-Type: application/json" \
+  --data-raw '{"id": "'"$id"'", "status":{"privacyStatus":"public"},"snippet": {"title": '"$title"',"categoryId":"'"$categ"'", "description": '"$desc"'} }') 
+  local err=$(jq -r '.error.errors[0].message' <<< "$resp")
+  [[ $err = null ]] || (echo "$err" && return 1)
+}
+
 # ------------------ builtin commands and functions ------------------
 #           (https://github.com/rwxrob/template-bash-command)
 
@@ -311,14 +346,13 @@ Also see `readme` and `usage` commands.
 
 command_help() { 
   local name="${1:-main}" title own body
-  title=$(_help_title "$name")
+  title=$(_help_title "$name") || true
   if [[ -z "$title" ]]; then
     body="${help[$name]}"
     title="$EXE $name"
     [[ $name = main ]] && title="$EXE"
   else
     body="${help[$name]}"
-    local eol=$'\n'
     body=${body#*$title}
   fi
   local file="/tmp/help-$EXE-$name.html"
@@ -377,6 +411,11 @@ _trim() {
 }
 
 _have(){ type "$1" &>/dev/null; }
+
+_jsonstr() {
+  _buffer "$@" && return $?
+  jq -MRsc <<< "$1"
+}
 
 _filter(){
   [[ -n "$1" ]] && return 1
